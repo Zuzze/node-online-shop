@@ -1,6 +1,6 @@
 # Node.js Online Store
 
-This repository includes a online stoore template built with node.js to understand better how logic of frontend frameworks work under the hood. This project uses pure node.js with ejs templating engine. Note that in production, it would be more meaningful to use actual frontend framework (e.g. React, Angular, Vue).
+This repository includes an online store template built with node.js to understand better how logic of frontend frameworks work under the hood and how to use node.js as backend with SQL ans NoSQL databases. The project uses pure node.js with ejs templating engine. Note that in production, it could be more meaningful to use actual frontend framework (e.g. React, Angular, Vue).
 
 ## Dynamic routing
 
@@ -27,7 +27,9 @@ router.get('/edit-product/:productId', adminController.getEditProduct);
 
 ## Storing data
 
-1. File System: Storing data locally in JSON files (slower and less scalable than using databases)
+### 1. File System
+
+Storing data locally in JSON files (slower and less scalable than using databases)
 
 ```
 const fs = require('fs');
@@ -41,26 +43,25 @@ fs.writeFile(path, JSON.stringify(cart), err => {
 });
 ```
 
-2. SQL (Structured Query Language) Database
+### 2. SQL (Structured Query Language) Database
 
 - Data `tables` that have **_relations_** ( => relational database):
   a) one-to-one relation
   b) one-to-many relation
   c) many-to-many relation
+- Structure has to fit (uses **_schemas_**), each row has all fields (columns) defined in table
+- Horizontal scaling (buying more servers) can be difficult
+- Limitations for read/write queries per second
 - Used via SQL queries, e.g.
 
 ```
 SELECT * FROM USERS WHERE age > 30
 ```
 
-- Structure has to fit (uses **_schemas_**), each row has all fields (columns) defined in table
-- Horizontal scaling (buying more servers) can be difficult
-- Limitations for read/write queries per second
-
-3. NoSQL Database
+### 3. NoSQL Database
 
 - `Collections` (table replacements) have no relations, instead parts of data that is needed is duplicated
-- Structure does not have to be same for all unlike SQL (_schemaless_)
+- Structure does not have to be same for all unlike SQL (**_schemaless_**)
 - As there is no need to fetch multiple relational, can be faster than SQL
 - Horizontal scaling possible, easier to scale than SQL
 - Great performance for mass read/write requests
