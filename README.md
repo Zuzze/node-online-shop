@@ -1,6 +1,12 @@
-# Node.js Online Store
+# :green_heart: Node.js Online Store
 
-This repository includes an online store template built with node.js to understand better how logic of frontend frameworks work under the hood and how to use node.js as backend with SQL ans NoSQL databases. The project uses pure node.js with ejs templating engine. Note that in production, it could be more meaningful to use actual frontend framework (e.g. React, Angular, Vue).
+This repository includes an online store template built with node.js to understand better how logic of frontend frameworks work under the hood and how to use node.js as backend with local, SQL and NoSQL databases. The project uses pure node.js with ejs templating engine. Note that in production, it could be more meaningful to use actual frontend framework (e.g. React, Angular, Vue).
+
+This repository shows 3 different ways to build backend with node.js
+
+1. using local `json` file via file system `fs`
+2. using SQL database (`MySQL` & `Sequelize`)
+3. using noSQL database (`MongoDB` & `Mongoose`)
 
 ## Dynamic routing
 
@@ -57,6 +63,86 @@ fs.writeFile(path, JSON.stringify(cart), err => {
 ```
 SELECT * FROM USERS WHERE age > 30
 ```
+
+#### Option 1: write queries as Strings
+
+`utils/database.js`
+
+```
+const mysql = require("mysql2");
+
+const pool = mysql.createPool({
+  host: "localhost",
+  user: "root",
+  // these you will set in MySQL workbench
+  database: "node-complete",
+  password: "test"
+});
+
+module.exports = pool.promise();
+```
+
+Avoid SQL injection by using '?' in `models/product.js`
+
+```
+const mySqlDb = require("../util/database");
+
+ mySqlDb.execute(
+      "INSERT INTO products (title, price, imageURL, description) VALUES (?,?,?,?)"
+    ),
+      [this.title, this.price, this.imageUrl, this.description];
+```
+
+#### Option 2: Use Sequelize (3rd party package)
+
+Sequelize is an object-relational mapping library that simplifies working with SQL queries in JavaScript generating the queries on your behalf. Instead of strings queries, it uses objects to define what to do.
+
+```
+const Sequelize = require('sequelize');
+
+const sequelize = require('../util/database');
+
+const Product = sequelize.define('product', {
+  id: {
+    type: Sequelize.INTEGER,
+    autoIncrement: true,
+    allowNull: false,
+    primaryKey: true
+  },
+  title: Sequelize.STRING,
+  price: {
+    type: Sequelize.DOUBLE,
+    allowNull: false
+  },
+  imageUrl: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  description: {
+    type: Sequelize.STRING,
+    allowNull: false
+  }
+});
+```
+
+You will access data with specified `Product.findAll()` and `Product.findByPk()` methods
+
+You can define relations (associations) with Sequelize like this:
+
+```
+sequelize.sync();
+product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+User.hasMany(Product);
+User.hasOne(Cart);
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
+Order.belongsTo(User);
+User.hasMany(Order);
+Order.belongsToMany(Product, { through: OrderItem });
+```
+
+User middleware defined in `app.js` gives access to User model anywhere in the app via `req.user` (e.g. `req.user.getCart().then(...).catch(...)`)
 
 ### 3. NoSQL Database
 

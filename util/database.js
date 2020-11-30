@@ -1,5 +1,8 @@
-const mysql = require("mysql2");
+// -- Pure MySQL approach without Sequelize ---
+/*const mysql = require("mysql2");
 
+
+// a connection pool is a cache of database connections maintained so that the connections can be reused when future requests to the database are required.
 const pool = mysql.createPool({
   host: "localhost",
   user: "root",
@@ -8,4 +11,15 @@ const pool = mysql.createPool({
   password: "test"
 });
 
-module.exports = pool.promise();
+module.exports = pool.promise();*/
+
+// --- Sequelize ---
+// Sequelize approach that connects to MySQL pool on the background
+const Sequelize = require("sequelize");
+
+const sequelize = new Sequelize("node-complete", "root", "test", {
+  dialect: "mysql",
+  host: "localhost"
+});
+
+module.exports = sequelize;

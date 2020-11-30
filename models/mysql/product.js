@@ -1,6 +1,5 @@
+// Pure MySQL approach without Sequelize
 const Cart = require("./cart");
-
-// MySQL
 const mySqlDb = require("../util/database");
 
 module.exports = class Product {
