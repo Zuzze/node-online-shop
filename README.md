@@ -13,13 +13,13 @@ This repository includes an online store template built with node.js to understa
 </form>
 ```
 
-- Dynamic routing with dynamic paths using `/:id`
+- Dynamic paths `/:id`
 
 ```
 router.get('/edit-product/:productId', adminController.getEditProduct);
 ```
 
-- Using dynamic ids and query params in urls:
+- URL Query params `?edit=true`:
 
 ```
 <a href="/admin/edit-product/<%= product.id %>?edit=true">Click</a>
@@ -66,13 +66,15 @@ SELECT * FROM USERS WHERE age > 30
 - Horizontal scaling possible, easier to scale than SQL
 - Great performance for mass read/write requests
 
-## Admin Features
+## App Features
+
+### Admin Features
 
 - Add product
 - Edit product
 - Delete product
 
-## Client Features
+### Client Features
 
 - View products and product details
 - Add product to cart

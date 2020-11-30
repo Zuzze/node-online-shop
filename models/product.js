@@ -1,12 +1,17 @@
-const fs = require('fs');
-const path = require('path');
+const Cart = require("./cart");
 
-const Cart = require('./cart');
+// local
+const fs = require("fs");
+const path = require("path");
 
-const p = path.join(
+// MySQL
+const mySqlDb = require("../util/database");
+
+// Helpers for saving to local JSON File
+/* const p = path.join(
   path.dirname(process.mainModule.filename),
-  'data',
-  'products.json'
+  "data",
+  "products.json"
 );
 
 const getProductsFromFile = cb => {
@@ -17,7 +22,7 @@ const getProductsFromFile = cb => {
       cb(JSON.parse(fileContent));
     }
   });
-};
+};*/
 
 module.exports = class Product {
   constructor(id, title, imageUrl, description, price) {
@@ -29,6 +34,40 @@ module.exports = class Product {
   }
 
   save() {
+    // --- MySQL ---
+    // To avoid SQL injection, check that data is safe by using '?' syntax that injects data only if the query is safe
+    mySqlDb.execute(
+      "INSERT INTO products (title, price, imageURL, description) VALUES (?,?,?,?)"
+    ),
+      [this.title, this.price, this.imageUrl, this.description];
+  }
+
+  static deleteById(id) {}
+
+  static fetchAll() {
+    mySqlDb
+      .execute("SELECT * FROM products WHERE products.id = ?", [id])
+      .then(result => {
+        console.log(result);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  static findById(id, cb) {
+    mySqlDb
+      .execute("SELECT * FROM products")
+      .then(result => {
+        console.log(result);
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  // ===== Functions for saving in local JSON file ====
+  /* save() {
     getProductsFromFile(products => {
       if (this.id) {
         const existingProductIndex = products.findIndex(
@@ -70,5 +109,5 @@ module.exports = class Product {
       const product = products.find(p => p.id === id);
       cb(product);
     });
-  }
+  }*/
 };
