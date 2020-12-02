@@ -151,6 +151,56 @@ User middleware defined in `app.js` gives access to User model anywhere in the a
 - As there is no need to fetch multiple relational, can be faster than SQL
 - Horizontal scaling possible, easier to scale than SQL
 - Great performance for mass read/write requests
+- one of the most common NoSQL databases is `MongoDB` that uses fast BSON data format on the background (converted from js obj automatically)
+
+app.js
+
+```
+const mongoConnect = require("./util/database");
+...
+mongoConnect(() => {
+  app.listen(3000);
+});
+
+```
+
+utils/database.js
+
+```
+    "mongodb+srv://zuzze:<password>@cluster0.atyng.mongodb.net/<dbname>?retryWrites=true&w=majority",
+    { useUnifiedTopology: true }
+  )
+    .then(res => {
+      console.log("connected!");
+      _db = client.db();
+      callback();
+    })
+    .catch(err => {
+      console.log(err);
+      throw err;
+    });
+};
+
+// as database is needed in multiple files, it is a a good idea to export it just once here
+const getDb = () => {
+  if (_db) {
+    return _db;
+  }
+  throw "No database found!";
+};
+
+exports.mongoConnect = mongoConnect;
+exports.getDb = getDb;
+```
+
+#### MongoDB CRUD operations
+
+- Create one: `db.collection("products").insertOne({...})`
+- Create many: `db.collection("products").insertMany([...])`
+- Read one: `db.collection("products").find({_id: new mongodb.ObjectId(prodId) }).next()` or `db.collection("users").findOne({ _id: new ObjectId(userId) })`
+- Read all: `db.collection("products").find().toArray()`
+- Update one: `db.collection("products").updateOne({ _id: this._id }, { $set: this });`
+- Delete one: `db.collection("products").deleteOne({ _id: new mongodb.ObjectId(prodId)})`
 
 ## App Features
 
