@@ -39,9 +39,11 @@ exports.getEditProduct = (req, res, next) => {
     return res.redirect("/");
   }
   const prodId = req.params.productId;
+  console.log("EDITING", prodId);
   Product.findById(prodId)
     // Product.findById(prodId)
     .then(product => {
+      console.log("editing product...", product);
       if (!product) {
         return res.redirect("/");
       }
@@ -91,6 +93,7 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.postDeleteProduct = (req, res, next) => {
+  console.log("Post delete", req.body);
   const prodId = req.body.productId;
   Product.deleteById(prodId)
     .then(() => {

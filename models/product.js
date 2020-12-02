@@ -8,6 +8,7 @@ class Product {
     this.price = price;
     this.description = description;
     this.imageUrl = imageUrl;
+    // mongoDB stores IDs in a specific ObjectID format which takes string as a parameter
     this._id = id ? new mongodb.ObjectId(id) : null;
     this.userId = userId;
   }
@@ -67,6 +68,8 @@ class Product {
   }
 
   static deleteById(prodId) {
+    console.log(prodId);
+    console.log("deleting product with id: " + prodId);
     const db = getDb();
     return db
       .collection("products")

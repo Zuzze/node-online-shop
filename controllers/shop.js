@@ -50,6 +50,7 @@ exports.getIndex = (req, res, next) => {
     });
 };
 
+/** returns cart with product details */
 exports.getCart = (req, res, next) => {
   req.user
     .getCart()
