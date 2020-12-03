@@ -103,9 +103,11 @@ class User {
             name: this.name
           }
         };
+        // add order to db
         return db.collection("orders").insertOne(order);
       })
       .then(result => {
+        // empty cart after order is done
         this.cart = { items: [] };
         return db
           .collection("users")
