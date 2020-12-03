@@ -64,7 +64,7 @@ fs.writeFile(path, JSON.stringify(cart), err => {
 SELECT * FROM USERS WHERE age > 30
 ```
 
-#### Option 1: write queries as Strings
+#### Option 1: write queries as Strings with MySQL
 
 `utils/database.js`
 
@@ -153,6 +153,8 @@ User middleware defined in `app.js` gives access to User model anywhere in the a
 - Great performance for mass read/write requests
 - one of the most common NoSQL databases is `MongoDB` that uses fast BSON data format on the background (converted from js obj automatically)
 
+#### Option 1: Use pure mongoDB
+
 app.js
 
 ```
@@ -193,7 +195,7 @@ exports.mongoConnect = mongoConnect;
 exports.getDb = getDb;
 ```
 
-#### MongoDB CRUD operations
+##### MongoDB CRUD operations
 
 - Create one: `db.collection("products").insertOne({...})`
 - Create many: `db.collection("products").insertMany([...])`
@@ -201,6 +203,41 @@ exports.getDb = getDb;
 - Read all: `db.collection("products").find().toArray()`
 - Update one: `db.collection("products").updateOne({ _id: this._id }, { $set: this });`
 - Delete one: `db.collection("products").deleteOne({ _id: new mongodb.ObjectId(prodId)})`
+
+#### Use MongoDB with Mongoose
+
+Mongoose is Object-Document Mapping (ODM) library for MongoDB, similar what Sequelize is for MySQL. It simplifies the mongoDB syntax.
+
+```
+npm install --save mongoose
+```
+
+##### Connection to Database with mongoose
+
+no need for database.js anymore, just add this into `app.js`
+
+```
+const mongoose = require('mongoose')
+```
+
+##### Mongoose CRUD operations
+
+- Create:
+
+```
+const product = new Product({
+    title,
+    price,
+    description,
+    imageUrl
+  });
+
+  product.save()
+```
+
+- Read one: `Product.findById(id)`
+- Read all: `Product.find()`
+- Delete one: `Product.findByIdAndRemove(prodId)`
 
 ## App Features
 
@@ -215,3 +252,5 @@ exports.getDb = getDb;
 - View products and product details
 - Add product to cart
 - Remove product from cart
+- Make order
+- View orders

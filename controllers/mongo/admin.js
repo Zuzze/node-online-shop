@@ -1,4 +1,3 @@
-// mongoose version of NoSQL admin controller
 const Product = require("../models/product");
 
 exports.getAddProduct = (req, res, next) => {
@@ -14,15 +13,14 @@ exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  // mongoose requires object
-  const product = new Product({
+  const product = new Product(
     title,
     price,
     description,
-    imageUrl
-  });
-
-  // save() from mongoose
+    imageUrl,
+    null,
+    req.user._id
+  );
   product
     .save()
     .then(result => {
@@ -42,8 +40,8 @@ exports.getEditProduct = (req, res, next) => {
   }
   const prodId = req.params.productId;
   console.log("EDITING", prodId);
-  // findById() from mongoose
   Product.findById(prodId)
+    // Product.findById(prodId)
     .then(product => {
       console.log("editing product...", product);
       if (!product) {
@@ -66,15 +64,15 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
 
-  Product.findById(prodId)
-    .then(product => {
-      // product full mongoose object with methods like save()
-      product.title = updatedTitle;
-      product.price = updatedPrice;
-      product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
+  const product = new Product(
+    updatedTitle,
+    updatedPrice,
+    updatedDesc,
+    updatedImageUrl,
+    prodId
+  );
+  product
+    .save()
     .then(result => {
       console.log("UPDATED PRODUCT!");
       res.redirect("/admin/products");
@@ -83,8 +81,7 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  // find() from mongoose
-  Product.find()
+  Product.fetchAll()
     .then(products => {
       res.render("admin/products", {
         prods: products,
@@ -98,8 +95,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   console.log("Post delete", req.body);
   const prodId = req.body.productId;
-  // mongoose findByIdAndRemove
-  Product.findByIdAndRemove(prodId)
+  Product.deleteById(prodId)
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");

@@ -1,9 +1,9 @@
-// this file contains NodeSQL config code for Mongoose version of MongoDB
+// this file contains code for non-mongoose version of MongoDB
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const errorController = require("./controllers/error");
-const mongoose = require("mongoose");
+const mongoConnect = require("./util/database").mongoConnect;
 const User = require("./models/user");
 const app = express();
 const dotenv = require("dotenv");
@@ -32,9 +32,8 @@ app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 
 app.use(errorController.get404);
-mongoose
-  .connect(
-    `mongodb+srv://zuzze:${process.env.MONGODB_PASSWORD}@cluster0.atyng.mongodb.net/shop?retryWrites=true&w=majority`
-  )
-  .then(app.listen(3000))
-  .catch(err => console.log(err));
+
+// MongoDB without mongoose
+mongoConnect(() => {
+  app.listen(3000);
+});
