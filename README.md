@@ -195,7 +195,7 @@ exports.mongoConnect = mongoConnect;
 exports.getDb = getDb;
 ```
 
-##### MongoDB CRUD operations
+##### MongoDB operations
 
 - Create one: `db.collection("products").insertOne({...})`
 - Create many: `db.collection("products").insertMany([...])`
@@ -220,7 +220,7 @@ no need for database.js anymore, just add this into `app.js`
 const mongoose = require('mongoose')
 ```
 
-##### Mongoose CRUD operations
+##### Mongoose operations
 
 - Create:
 
@@ -238,6 +238,9 @@ const product = new Product({
 - Read one: `Product.findById(id)`
 - Read all: `Product.find()`
 - Delete one: `Product.findByIdAndRemove(prodId)`
+- Fill in all user object data based on id (mixing collections): `Product.find().populate('userId')`
+- Select only certain fields (title, price) / exclude certain fields (\_id) `Product.find().select('title price -_id')`
+- Relations in mongoose: `req.user.populate("cart.items.productId").execPopulate()`
 
 ## App Features
 

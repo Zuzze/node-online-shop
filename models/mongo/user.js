@@ -1,76 +1,8 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+const mongodb = require("mongodb");
+const getDb = require("../util/database").getDb;
 
-const UserSchema = new Schema({
-  name: {
-    type: String,
-    required: true
-  },
+const ObjectId = mongodb.ObjectId;
 
-  email: {
-    type: String,
-    required: true
-  },
-  cart: {
-    items: [
-      {
-        productId: {
-          type: Schema.Types.ObjectId,
-          ref: "Product",
-          required: true
-        },
-        quantity: {
-          type: Number,
-          required: true
-        }
-      }
-    ]
-  }
-});
-
-UserSchema.methods.addToCart = function(product) {
-  const cartProductIndex = this.cart.items.findIndex(cartProduct => {
-    return cartProduct.productId.toString() === product._id.toString();
-  });
-  let newQuantity = 1;
-  const updatedCartItems = [...this.cart.items];
-
-  // this product was already in cart, just add quantity
-  if (cartProductIndex >= 0) {
-    newQuantity = this.cart.items[cartProductIndex].quantity + 1;
-    updatedCartItems[cartProductIndex].quantity = newQuantity;
-  } else {
-    // this product was not in cart, push new item and quantity to cart
-    updatedCartItems.push({
-      // mongoose will wrap id automatidcally to mongo ObjectID
-      productId: product._id,
-      quantity: newQuantity
-    });
-  }
-  const updatedCart = {
-    items: updatedCartItems
-  };
-  // update user cart
-  this.cart = updatedCart;
-  return this.save();
-};
-
-UserSchema.methods.removeFromCart = function(productId) {
-  const updatedCartItems = this.cart.items.filter(item => {
-    return item.productId.toString() !== productId.toString();
-  });
-  this.cart.items = updatedCartItems;
-  return this.save();
-};
-
-UserSchema.methods.clearCart = function() {
-  this.cart = { items: [] };
-  return this.save();
-};
-
-module.exports = mongoose.model("User", UserSchema);
-
-/*
 class User {
   constructor(username, email, cart, id) {
     this.name = username;
@@ -79,13 +11,13 @@ class User {
     this._id = id;
   }
 
-  // creates new user 
+  /** creates new user */
   save() {
     const db = getDb();
     return db.collection("users").insertOne(this);
   }
 
-  // adds product to user's cart
+  /** adds product to user's cart */
   addToCart(product) {
     const cartProductIndex = this.cart.items.findIndex(cartProduct => {
       return cartProduct.productId.toString() === product._id.toString();
@@ -122,7 +54,7 @@ class User {
    * with enriched details of products
    * - not just id and quantity
    */
-/*getCart() {
+  getCart() {
     const db = getDb();
     const productIds = this.cart.items.map(i => {
       return i.productId;
@@ -146,7 +78,7 @@ class User {
   }
 
   /** deletes item from user's cart */
-/*deleteItemFromCart(productId) {
+  deleteItemFromCart(productId) {
     const updatedCartItems = this.cart.items.filter(item => {
       return item.productId.toString() !== productId.toString();
     });
@@ -160,7 +92,7 @@ class User {
   }
 
   /** Adds new order  */
-/*addOrder() {
+  addOrder() {
     const db = getDb();
     return this.getCart()
       .then(products => {
@@ -187,7 +119,7 @@ class User {
   }
 
   /** Returns orders of user  */
-/*getOrders() {
+  getOrders() {
     const db = getDb();
     return db
       .collection("orders")
@@ -196,7 +128,7 @@ class User {
   }
 
   /** finds user from database */
-/*static findById(userId) {
+  static findById(userId) {
     const db = getDb();
     return db
       .collection("users")
@@ -211,4 +143,4 @@ class User {
   }
 }
 
-module.exports = User;*/
+module.exports = User;

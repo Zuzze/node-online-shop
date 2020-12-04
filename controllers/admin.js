@@ -19,7 +19,9 @@ exports.postAddProduct = (req, res, next) => {
     title,
     price,
     description,
-    imageUrl
+    imageUrl,
+    // mongoose will on default pick the _id if you pass mongoose object
+    userId: req.user
   });
 
   // save() from mongoose

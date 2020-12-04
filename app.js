@@ -19,10 +19,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  User.findById("5fc4f851cd590617d8083baf")
+  User.findById("5fca14de5ff78764184ebc36")
     .then(user => {
-      console.log("USER", user);
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       next();
     })
     .catch(err => console.log(err));
@@ -36,5 +35,21 @@ mongoose
   .connect(
     `mongodb+srv://zuzze:${process.env.MONGODB_PASSWORD}@cluster0.atyng.mongodb.net/shop?retryWrites=true&w=majority`
   )
-  .then(app.listen(3000))
+  .then(result => {
+    // create new user when connection created if there are no users
+    // findOne() returns first user in the array on default
+    User.findOne().then(user => {
+      if (!user) {
+        const user = new User({
+          name: "Zuzze",
+          email: "test@test.com",
+          cart: {
+            items: []
+          }
+        });
+        user.save();
+      }
+      app.listen(3000);
+    });
+  })
   .catch(err => console.log(err));

@@ -19,6 +19,11 @@ const productsSchema = new Schema({
   imageUrl: {
     type: String,
     require: true
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    // Relations in mongoose: refer to User model by using same string as in models/user.js
+    ref: "User"
   }
 });
 module.exports = mongoose.model("Product", productsSchema);
