@@ -242,6 +242,28 @@ const product = new Product({
 - Select only certain fields (title, price) / exclude certain fields (\_id) `Product.find().select('title price -_id')`
 - Relations in mongoose: `req.user.populate("cart.items.productId").execPopulate()`
 
+## Cookies
+
+Cookies are tool to save data on client-side (in browser)
+
+- Pro: Cookies can be used to share data globally without exposing global data to users.
+- Con: You can manipulate cookies inside browser so sensitive data should not be stored in cookies but works for analytics tracking etc
+
+```
+res.setHeader('Set-Cookie', 'loggedIn=true; Max-Age: 1000')
+
+req.get('Cookie')
+```
+
+### Sessions
+
+Sessions are tool to save data on server-side. Use sessions for sharing data across requests scoping data for a specific user without exposing data for other users
+
+```
+npm install --save express-session
+npm install --save connect-mongodb-session
+```
+
 ## App Features
 
 ### Admin Features
