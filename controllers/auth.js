@@ -1,4 +1,6 @@
 const bcrypt = require("bcryptjs");
+// node js includes crypto library
+const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
 const User = require("../models/user");
@@ -130,4 +132,111 @@ exports.postLogout = (req, res, next) => {
     console.log(err);
     res.redirect("/");
   });
+};
+
+exports.getResetPassword = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+  res.render("auth/reset-password", {
+    path: "/reset",
+    pageTitle: "Reset Password",
+    errorMessage: message
+  });
+};
+
+exports.postResetPassword = (req, res, next) => {
+  // generate random token by using nodejs's own crypto mdule
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      console.log(err);
+      return res.redirect("/reset");
+    }
+    const token = buffer.toString("hex");
+
+    // find user from database and save temporary token there
+    User.findOne({ email: req.body.email })
+      .then(user => {
+        if (!user) {
+          req.flash("error", "No account with given email found.");
+          return res.redirect("/reset");
+        }
+        user.resetToken = token;
+        // 1h = 36000000 ms
+        user.resetTokenExpiration = Date.now() + 3600000;
+        return user.save();
+      })
+      .then(result => {
+        res.redirect("/");
+        transporter.sendMail({
+          to: req.body.email,
+          from: "zuzzetech@gmail.com",
+          subject: "Password reset",
+          html: `
+              <p>Reset your password</p>
+              <p>Reset your password by clicking <a href="${process.env.BASE_URL}/reset/${token}">this link</a>.</p>
+            `
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  });
+};
+
+/** renders page where user can set new password */
+exports.getNewPassword = (req, res, next) => {
+  // get token from /reset/:token dynamic url path
+  const token = req.params.token;
+  // mongoose has special operation called gt = greater than
+  User.findOne({ resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
+    .then(user => {
+      let message = req.flash("error");
+      if (message.length > 0) {
+        message = message[0];
+      } else {
+        message = null;
+      }
+      res.render("auth/new-password", {
+        path: "/new-password",
+        pageTitle: "New Password",
+        errorMessage: message,
+        userId: user._id.toString(),
+        passwordToken: token
+      });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+};
+
+exports.postNewPassword = async (req, res, next) => {
+  // this information comes from view's <form>
+  // userId and token are hidden fields not visible for the user
+  const newPassword = req.body.password;
+  const userId = req.body.userId;
+  const passwordToken = req.body.passwordToken;
+  let resetUser;
+
+  try {
+    const user = await User.findOne({
+      resetToken: passwordToken,
+      resetTokenExpiration: { $gt: Date.now() },
+      _id: userId
+    });
+    resetUser = user;
+    // remember to hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    resetUser.password = hashedPassword;
+    resetUser.resetToken = undefined;
+    resetUser.resetTokenExpiration = undefined;
+
+    const result = await resetUser.save();
+    res.redirect("/login");
+  } catch (err) {
+    console.log(err);
+  }
 };
