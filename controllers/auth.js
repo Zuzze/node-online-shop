@@ -1,6 +1,15 @@
 const bcrypt = require("bcryptjs");
-
+const nodemailer = require("nodemailer");
+const sendgridTransport = require("nodemailer-sendgrid-transport");
 const User = require("../models/user");
+
+const transporter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key: process.env.SENDGRID_API_KEY
+    }
+  })
+);
 
 exports.getLogin = (req, res, next) => {
   // req.flash(key) pulls flash messages from flash package so that <% errorMessage %> can be used in the view directly
@@ -98,7 +107,17 @@ exports.postSignup = (req, res, next) => {
           return user.save();
         })
         .then(result => {
+          // it is recommended too execute redirect before as email is asynchronus and cna be blocking all future actions
           res.redirect("/login");
+          return transporter.sendMail({
+            to: email,
+            from: "zuzzetech@gmail.com",
+            subject: "Welcome",
+            html: "<h1>Thank you for joining <3 </h1>"
+          });
+        })
+        .catch(err => {
+          console.log(err);
         });
     })
     .catch(err => {
