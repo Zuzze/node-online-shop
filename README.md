@@ -1,12 +1,10 @@
 # :green_heart: Node.js Online Store
 
-This repository includes an online store template built with node.js to understand better how logic of frontend frameworks work under the hood and how to use node.js as backend with local, SQL and NoSQL databases. The project uses pure node.js with ejs templating engine. Note that in production, it could be more meaningful to use actual frontend framework (e.g. React, Angular, Vue).
+This repository includes a full-stack online store template built with node.js to understand better how logic of frontend frameworks work under the hood and how to use node.js as backend with local, SQL and NoSQL databases. The project uses pure node.js with **ejs** templating engine. This approach was the popular way to build websites before REST APIs decoupled frontend and backend into separate independent entities and frontend frameworks like Vue/Angular/React took over. The main idea is to use **MVC** approach:
 
-This repository shows 3 different ways to build backend with node.js
-
-1. using local `json` file via file system `fs`
-2. using SQL database (`MySQL` & `Sequelize`)
-3. using noSQL database (`MongoDB` & `Mongoose`)
+- _controllers_ represent the logic of node app in js; they connect views and models, include database actions, and render views
+- _views_ are what user sees, written in HTML and templating engine language (ejs, handlebars, pug etc)
+- _models_ data representation (classes/schemas)
 
 ## Dynamic routing
 
@@ -32,6 +30,12 @@ router.get('/edit-product/:productId', adminController.getEditProduct);
 ```
 
 ## Storing data
+
+This repository shows 3 different ways to build backend with node.js
+
+1. using local `json` file via file system `fs`
+2. using SQL database (`MySQL` & `Sequelize`)
+3. using noSQL database (`MongoDB` & `Mongoose`)
 
 ### 1. File System
 
@@ -242,7 +246,7 @@ const product = new Product({
 - Select only certain fields (title, price) / exclude certain fields (\_id) `Product.find().select('title price -_id')`
 - Relations in mongoose: `req.user.populate("cart.items.productId").execPopulate()`
 
-## Cookies
+## :cookie: Cookies
 
 Cookies are tool to save data on client-side (in browser)
 

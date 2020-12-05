@@ -1,23 +1,33 @@
 // this file contains NodeSQL config code for Mongoose version of MongoDB
+
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const errorController = require("./controllers/error");
 const User = require("./models/user");
 
+// db config
 const mongoose = require("mongoose");
+
+// Session config via mongodb
 const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
-const MONGODB_URI = `mongodb+srv://zuzze:${process.env.MONGODB_PASSWORD}@cluster0.atyng.mongodb.net/shop?retryWrites=true&w=majority`;
 
+// .env config
+const dotenv = require("dotenv");
+dotenv.config();
+
+// App config starts
+const MONGODB_URI = `mongodb+srv://zuzze:${process.env.MONGODB_PASSWORD}@cluster0.atyng.mongodb.net/shop?retryWrites=true&w=majority`;
 const app = express();
+
+// this helps to keep track of active sessions on server-side
+// this could be stored in any DB, we will use Mongo, as it is already configured
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: "sessions"
 });
 
-const dotenv = require("dotenv");
-dotenv.config();
 app.set("view engine", "ejs");
 app.set("views", "views");
 
@@ -27,9 +37,13 @@ const authRoutes = require("./routes/auth");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+
+// Using Session cookies
+// this will add connect.sid cookie by express-session that stays alive between requests but not between different users until browser is closed
 app.use(
   session({
     secret: "my secret",
+    // saves only if sth is changed
     resave: false,
     saveUninitialized: false,
     store: store
@@ -48,25 +62,15 @@ app.use((req, res, next) => {
     .catch(err => console.log(err));
 });
 
-/*app.use((req, res, next) => {
-  User.findById("5fca14de5ff78764184ebc36")
-    .then(user => {
-      req.user = user;
-      next();
-    })
-    .catch(err => console.log(err));
-});*/
-
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
 app.use(errorController.get404);
+
 mongoose
   .connect(MONGODB_URI)
   .then(result => {
-    // create new user when connection created if there are no users
-    // findOne() returns first user in the array on default
     User.findOne().then(user => {
       if (!user) {
         const user = new User({
@@ -78,7 +82,9 @@ mongoose
         });
         user.save();
       }
-      app.listen(3000);
     });
+    app.listen(3000);
   })
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.error(err);
+  });
