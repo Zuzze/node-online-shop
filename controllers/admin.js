@@ -61,32 +61,43 @@ exports.getEditProduct = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-exports.postEditProduct = (req, res, next) => {
+exports.postEditProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
 
-  Product.findById(prodId)
-    .then(product => {
-      // product full mongoose object with methods like save()
-      product.title = updatedTitle;
-      product.price = updatedPrice;
-      product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
-      return product.save();
-    })
-    .then(result => {
-      console.log("UPDATED PRODUCT!");
-      res.redirect("/admin/products");
-    })
-    .catch(err => console.log(err));
+  try {
+    const product = await Product.findById(prodId);
+
+    // avoid malicious activities
+    if (product.userId.toString() !== req.user._id.toString()) {
+      console.log(
+        "user is trying to edit product that was created by another user"
+      );
+      return res.redirect("/");
+    }
+    // product full mongoose object with methods like save()
+    product.title = updatedTitle;
+    product.price = updatedPrice;
+    product.description = updatedDesc;
+    product.imageUrl = updatedImageUrl;
+
+    const result = await product.save();
+    console.log("UPDATED PRODUCT!");
+    res.redirect("/admin/products");
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 exports.getProducts = (req, res, next) => {
   // find() from mongoose
-  Product.find()
+  // show only products this user has added
+  // req.user exists because it is already handled
+  // if all admins can edit all products, use Product.find() instead
+  Product.find({ userId: req.user._id })
     .then(products => {
       res.render("admin/products", {
         prods: products,
@@ -101,7 +112,8 @@ exports.postDeleteProduct = (req, res, next) => {
   console.log("Post delete", req.body);
   const prodId = req.body.productId;
   // mongoose findByIdAndRemove
-  Product.findByIdAndRemove(prodId)
+  // Product.findByIdAndRemove(prodId)
+  Product.deleteOne({ _id: prodId, userId: req.userId })
     .then(() => {
       console.log("DESTROYED PRODUCT");
       res.redirect("/admin/products");
