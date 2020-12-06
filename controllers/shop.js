@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+const stripe = require("stripe")(process.env.STRIPE_SK_KEY);
 
 const Product = require("../models/product");
 const Order = require("../models/order");
@@ -236,4 +237,88 @@ exports.getInvoice = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+exports.getCheckout = async (req, res, next) => {
+  console.log("getting checkout page...");
+  let products;
+  let total = 0;
+  // populate full product data, not just prodId
+  req.user
+    .populate("cart.items.productId")
+    .execPopulate()
+    .then(user => {
+      products = user.cart.items;
+      total = 0;
+      products.forEach(p => {
+        total += p.quantity * p.productId.price;
+      });
+
+      console.log("creating stripe session...");
+      // MUST user Math.round() or otherwise the payment view won't appear
+      return stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: products.map(p => {
+          return {
+            name: p.productId.title,
+            description: p.productId.description,
+            amount: Math.round(p.productId.price * 100),
+            currency: "usd",
+            quantity: p.quantity
+          };
+        }),
+        // protocol = http/https
+        // host = localhost:3000 or actual url
+        // note: in real apps, you should use webhooks so users cannot fake orders by entering success url directly
+        success_url:
+          req.protocol + "://" + req.get("host") + "/checkout/success",
+        cancel_url: req.protocol + "://" + req.get("host") + "/checkout/cancel"
+      });
+    })
+    .then(session => {
+      console.log("stripe session successfully created", session);
+      // session is session from Stripe
+      res.render("shop/checkout", {
+        path: "/checkout",
+        pageTitle: "Checkout",
+        products: products,
+        totalSum: total,
+        sessionId: session.id
+      });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
+exports.getCheckoutSuccess = (req, res, next) => {
+  req.user
+    .populate("cart.items.productId")
+    .execPopulate()
+    .then(user => {
+      const products = user.cart.items.map(i => {
+        return { quantity: i.quantity, product: { ...i.productId._doc } };
+      });
+      const order = new Order({
+        user: {
+          email: req.user.email,
+          userId: req.user
+        },
+        products: products
+      });
+      return order.save();
+    })
+    .then(result => {
+      return req.user.clearCart();
+    })
+    .then(() => {
+      res.redirect("/orders");
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };

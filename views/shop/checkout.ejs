@@ -1,0 +1,39 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/cart.css">
+    
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+        <main>
+            <ul class="cart__item-list">
+                <% products.forEach(p => { %>
+                    <li class="cart__item">
+                        <h1><%= p.productId.title %></h1>
+                        <h2>Quantity: <%= p.quantity %></h2>
+                    </li>
+                <% }) %>
+            </ul>
+            <div class="centered">
+                <h2>Total: <%= totalSum %></h2>
+            </div>
+            <div class="centered">
+                <button id="order-btn" class="btn">PAY NOW</button>
+               
+                <script type="text/javascript">
+                    // public key of stripe that does not contain sensitive info
+                    const stripe = Stripe("pk_test_51HoSdWBSpzNhr5XJVhWgiuUvlhjigEiZxxDzTwL54umdh42slzp3mGURZ3Lxy1VLJiEtk29zDU8CHbxpFsNPXDVf00bm468V91");
+                    const orderBtn = document.getElementById('order-btn');
+                    orderBtn.addEventListener('click', function() {
+                        stripe.redirectToCheckout({
+                            sessionId: '<%= sessionId %>'
+                        }).then( (result) => {
+                          console.log("STRIPE: redirected to checkout")
+                        }).catch( err => {
+                            console.log("STRIPE FAILED:", err)
+                        });
+                    });
+                </script>
+            </div>
+        </main>
+        <%- include('../includes/end.ejs') %>
