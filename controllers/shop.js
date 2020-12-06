@@ -6,7 +6,7 @@ const stripe = require("stripe")(process.env.STRIPE_SK_KEY);
 const Product = require("../models/product");
 const Order = require("../models/order");
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 6;
 
 async function renderPaginatedProducts(
   req,

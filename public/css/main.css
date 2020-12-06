@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700");
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,700");
 
 * {
   box-sizing: border-box;
@@ -6,12 +6,17 @@
 
 body {
   padding: 0;
+
   margin: 0;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Montserrat", sans-serif;
+  background-image: url("../images/wave.svg");
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 main {
   padding: 1rem;
+  padding-top: 4rem;
   margin: auto;
 }
 
@@ -34,9 +39,15 @@ form {
 .main-header {
   width: 100%;
   height: 3.5rem;
-  background-color: #00695c;
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.3);
   padding: 0 1.5rem;
   display: flex;
+  position: fixed;
+  z-index: 3;
+  top: 0;
+  left: 0;
+  right: 0;
   align-items: center;
 }
 
@@ -75,7 +86,7 @@ form {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: #ffeb3b;
+  color: #d25d5b;
 }
 
 .mobile-nav {
@@ -170,7 +181,7 @@ form {
 }
 
 .card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card__header,
@@ -208,19 +219,19 @@ form {
 
 .btn {
   display: inline-block;
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1rem;
   text-decoration: none;
   font: inherit;
-  border: 1px solid #00695c;
-  color: #00695c;
-  background: white;
-  border-radius: 3px;
+  border: none;
+  border-radius: 1em;
+  color: white;
+  background: #e07a78;
   cursor: pointer;
 }
 
 .btn:hover,
 .btn:active {
-  background-color: #00695c;
+  background-color: rgb(255, 176, 176);
   color: white;
 }
 
