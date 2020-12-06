@@ -76,6 +76,7 @@ exports.postAddProduct = (req, res, next) => {
       // res.redirect('/500');
       const error = new Error(err);
       error.httpStatusCode = 500;
+      // instead of handling error here, we can handle it in error handling middleware
       return next(error);
     });
 };
@@ -104,7 +105,11 @@ exports.getEditProduct = (req, res, next) => {
         validationErrors: []
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
 exports.postEditProduct = async (req, res, next) => {
@@ -154,7 +159,9 @@ exports.postEditProduct = async (req, res, next) => {
     console.log("UPDATED PRODUCT!");
     res.redirect("/admin/products");
   } catch (err) {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
@@ -171,18 +178,26 @@ exports.getProducts = (req, res, next) => {
         path: "/admin/products"
       });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
 
-exports.postDeleteProduct = (req, res, next) => {
+exports.postDeleteProduct = async (req, res, next) => {
   console.log("Post delete", req.body);
   const prodId = req.body.productId;
   // mongoose findByIdAndRemove
   // Product.findByIdAndRemove(prodId)
-  Product.deleteOne({ _id: prodId, userId: req.userId })
-    .then(() => {
-      console.log("DESTROYED PRODUCT");
-      res.redirect("/admin/products");
-    })
-    .catch(err => console.log(err));
+
+  try {
+    await Product.deleteOne({ _id: prodId, userId: req.user._id });
+    console.log("DESTROYED PRODUCT");
+    res.redirect("/admin/products");
+  } catch {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 };

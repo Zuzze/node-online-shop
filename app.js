@@ -25,7 +25,7 @@ dotenv.config();
 
 const MONGODB_URI = `mongodb+srv://zuzze:${process.env.MONGODB_PASSWORD}@cluster0.atyng.mongodb.net/shop?retryWrites=true&w=majority`;
 
-// GENERAL CONFIG
+// --- GENERAL CONFIG ---
 const app = express(); // create express server
 const csrfProtection = csrf();
 const adminRoutes = require("./routes/admin");
@@ -34,14 +34,14 @@ const authRoutes = require("./routes/auth");
 app.use(bodyParser.urlencoded({ extended: false })); // handle API respnse body parsing
 app.use(express.static(path.join(__dirname, "public")));
 
-// CONFIG STRUCTURE
+// --- CONFIG STRUCTURE ---
 // templating engine, views folder source
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-// SETUP SESSION LOGIC
+// --- SETUP SESSION LOGIC ---
 // this helps to keep track of active sessions on server-side
-// this could be stored in any DB, we will use Mongo, as it is already configured
+// this could be stored in any DB, we will use Mongo, as it is already used elsewhere in app (via mongoose)
 const store = new MongoDBStore({
   uri: MONGODB_URI,
   collection: "sessions"
@@ -60,7 +60,7 @@ app.use(
 app.use(csrfProtection);
 app.use(flash());
 
-// INITIAL AUTHENTICATION
+// --- INITIAL AUTHENTICATION ---
 app.use((req, res, next) => {
   if (!req.session.user) {
     return next();
@@ -78,7 +78,7 @@ app.use((req, res, next) => {
     });
 });
 
-// SETUP GLOBAL ACCESS TO VARIABLES
+// --- SETUP GLOBAL ACCESS TO VARIABLES ---
 // Access local variables on each view that is rendered
 // CSRF token will change on each render
 app.use((req, res, next) => {
@@ -91,14 +91,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// ROUTES
+// --- ROUTES ---
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 app.get("/500", errorController.get500);
 app.use(errorController.get404);
 
-// CONNECT TO DB
+// --- CENTRAL ERROR HANDLING MIDDLEWARE ---
+// error handling middleware from express takes 4 arguments and is triggered on next(error)
+app.use((error, req, res, next) => {
+  // res.status(error.httpStatusCode).render(...);
+  // res.redirect('/500');
+  res.status(500).render("500", {
+    pageTitle: "Error!",
+    path: "/500",
+    isAuthenticated: req.session.isLoggedIn
+  });
+});
+
+// --- CONNECTION TO DB ---
 mongoose
   .connect(MONGODB_URI)
   .then(result => {

@@ -127,17 +127,43 @@ exports.postLogin = async (req, res, next) => {
       res.redirect("/login");
     }
   } catch (err) {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
 
 function sendWelcomeEmail(email) {
-  return transporter.sendMail({
+  transporter.sendMail({
     to: email,
     from: "zuzzetech@gmail.com",
     subject: "Welcome",
     html: "<h1>Thank you for joining <3 </h1>"
   });
+}
+
+async function createNewUser(email, password, res, next) {
+  try {
+    // remember to encyprt ie.hash passwords so that they are not exposed to employees or third parties
+    // second argument = how many rounds of hashing is used, currently used value 12
+    // passwords cannot be decrypted
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = new User({
+      email: email,
+      password: hashedPassword,
+      cart: { items: [] }
+    });
+    const result = await user.save();
+    // it is recommended too execute redirect before as
+    // email is asynchronus and cna be blocking all future actions
+    res.redirect("/login");
+    sendWelcomeEmail(email);
+  } catch (err) {
+    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 }
 
 /** Create new user */
@@ -162,30 +188,7 @@ exports.postSignup = (req, res, next) => {
       validationErrors: errors.array()
     });
   }
-  // PASSWORD ENCRYPTION
-  // remember to encyprt ie.hash passwords so that they are not exposed to employees or third parties
-  // second argument = how many rounds of hashing is used, currently used value 12
-  // passwords cannot be decrypted
-  bcrypt
-    .hash(password, 12)
-    .then(hashedPassword => {
-      console.log("PASSWORD HASHED", hashedPassword);
-      const user = new User({
-        email: email,
-        password: hashedPassword,
-        cart: { items: [] }
-      });
-      console.log("NEW USER", user);
-      return user.save();
-    })
-    .then(result => {
-      // it is recommended too execute redirect before as email is asynchronus and cna be blocking all future actions
-      res.redirect("/login");
-      sendWelcomeEmail(email);
-    })
-    .catch(err => {
-      console.log(err);
-    });
+  createNewUser(email, password, res, next);
 };
 
 exports.postLogout = (req, res, next) => {
@@ -243,7 +246,9 @@ exports.postResetPassword = (req, res, next) => {
         });
       })
       .catch(err => {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
       });
   });
 };
@@ -270,7 +275,9 @@ exports.getNewPassword = (req, res, next) => {
       });
     })
     .catch(err => {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
 };
 
@@ -298,6 +305,8 @@ exports.postNewPassword = async (req, res, next) => {
     const result = await resetUser.save();
     res.redirect("/login");
   } catch (err) {
-    console.log(err);
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
   }
 };
