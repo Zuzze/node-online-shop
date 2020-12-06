@@ -5,20 +5,59 @@ const PDFDocument = require("pdfkit");
 const Product = require("../models/product");
 const Order = require("../models/order");
 
-exports.getProducts = async (req, res, next) => {
+const ITEMS_PER_PAGE = 3;
+
+async function renderPaginatedProducts(
+  req,
+  res,
+  next,
+  viewPath,
+  urlPath,
+  pageTitle
+) {
+  // if url query param is not returning number, go to page 1
+  // unary plus operator (+) attempts to convert it into a number, if it isn't already.
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Unary_plus
+  const page = +req.query.page || 1;
+
   try {
-    // find() from mongoose returs all
-    const products = await Product.find();
-    res.render("shop/product-list", {
+    const totalNumberOfProducts = await Product.find().countDocuments();
+    // mongoose skip(n) skips first n items
+    // mongoose limit(n) returns max n items
+    const products = await Product.find()
+      .skip((page - 1) * ITEMS_PER_PAGE)
+      .limit(ITEMS_PER_PAGE);
+    res.render(viewPath, {
       prods: products,
-      pageTitle: "All Products",
-      path: "/products"
+      pageTitle: pageTitle,
+      path: urlPath,
+      currentPage: page,
+      hasNextPage: ITEMS_PER_PAGE * page < totalNumberOfProducts,
+      hasPreviousPage: page > 1,
+      nextPage: page + 1,
+      previousPage: page - 1,
+      lastPage: Math.ceil(totalNumberOfProducts / ITEMS_PER_PAGE)
     });
   } catch (err) {
     const error = new Error(err);
     error.httpStatusCode = 500;
     return next(error);
   }
+}
+
+exports.getIndex = async (req, res, next) => {
+  return renderPaginatedProducts(req, res, next, "shop/index", "Shop", "/");
+};
+
+exports.getProducts = async (req, res, next) => {
+  return renderPaginatedProducts(
+    req,
+    res,
+    next,
+    "shop/product-list",
+    "All Products",
+    "/products"
+  );
 };
 
 exports.getProduct = async (req, res, next) => {
@@ -33,22 +72,6 @@ exports.getProduct = async (req, res, next) => {
       path: "/products"
     });
   } catch {
-    const error = new Error(err);
-    error.httpStatusCode = 500;
-    return next(error);
-  }
-};
-
-exports.getIndex = async (req, res, next) => {
-  try {
-    // find() from mongoose returs all
-    const products = await Product.find();
-    res.render("shop/index", {
-      prods: products,
-      pageTitle: "Shop",
-      path: "/"
-    });
-  } catch (err) {
     const error = new Error(err);
     error.httpStatusCode = 500;
     return next(error);
