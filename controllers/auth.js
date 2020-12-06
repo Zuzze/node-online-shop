@@ -3,8 +3,10 @@ const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const sendgridTransport = require("nodemailer-sendgrid-transport");
+const { validationResult } = require("express-validator/check");
 const User = require("../models/user");
 
+// email
 const transporter = nodemailer.createTransport(
   sendgridTransport({
     auth: {
@@ -24,7 +26,12 @@ exports.getLogin = (req, res, next) => {
   res.render("auth/login", {
     path: "/login",
     pageTitle: "Login",
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: "",
+      password: ""
+    },
+    validationErrors: []
   });
 };
 
@@ -38,7 +45,13 @@ exports.getSignup = (req, res, next) => {
   res.render("auth/signup", {
     path: "/signup",
     pageTitle: "Signup",
-    errorMessage: message
+    errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: ""
+    },
+    validationErrors: []
   });
 };
 
@@ -46,6 +59,23 @@ exports.getSignup = (req, res, next) => {
 exports.postLogin = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  const errors = validationResult(req);
+
+  // check errors checked by express-validator in /routes/auth
+  if (!errors.isEmpty()) {
+    console.log("LOGIN ERRORS", errors.array());
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "Login",
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password
+      },
+      validationErrors: errors.array()
+    });
+  }
+
   // find user by email
   try {
     const user = await User.findOne({ email: email });
@@ -54,8 +84,18 @@ exports.postLogin = async (req, res, next) => {
     if (!user) {
       // in app.js flash package has been provided
       // req.flash(key, message)
-      req.flash("error", "Invalid email.");
-      return res.redirect("/login");
+      // req.flash("error", "No user found with this email.");
+      return res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: "No user found with this email.",
+        oldInput: {
+          email: email,
+          password: password
+        },
+        // simulate validator format by adding "param"
+        validationErrors: [{ param: "email" }]
+      });
     }
 
     // PASSWORD ENCRYPTION
@@ -71,9 +111,17 @@ exports.postLogin = async (req, res, next) => {
           res.redirect("/");
         });
       }
-      // Incorrect email
-      req.flash("error", "Invalid password.");
-      res.redirect("/login");
+      // Incorrect password
+      return res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "Login",
+        errorMessage: "This password is invalid.",
+        oldInput: {
+          email: email,
+          password: password
+        },
+        validationErrors: [{ param: "password" }]
+      });
     } catch (err) {
       console.log(err);
       res.redirect("/login");
@@ -83,44 +131,57 @@ exports.postLogin = async (req, res, next) => {
   }
 };
 
+function sendWelcomeEmail(email) {
+  return transporter.sendMail({
+    to: email,
+    from: "zuzzetech@gmail.com",
+    subject: "Welcome",
+    html: "<h1>Thank you for joining <3 </h1>"
+  });
+}
+
 /** Create new user */
 exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
-  User.findOne({ email: email })
-    .then(userDoc => {
-      if (userDoc) {
-        req.flash("error", "Email exists already.");
-        return res.redirect("/signup");
-      }
-      // PASSWORD ENCRYPTION
-      // remember to encyprt ie.hash passwords so that they are not exposed to employees or third parties
-      // second argument = how many rounds of hashing is used, currently used value 12
-      // passwords cannot be decrypted
-      return bcrypt
-        .hash(password, 12)
-        .then(hashedPassword => {
-          const user = new User({
-            email: email,
-            password: hashedPassword,
-            cart: { items: [] }
-          });
-          return user.save();
-        })
-        .then(result => {
-          // it is recommended too execute redirect before as email is asynchronus and cna be blocking all future actions
-          res.redirect("/login");
-          return transporter.sendMail({
-            to: email,
-            from: "zuzzetech@gmail.com",
-            subject: "Welcome",
-            html: "<h1>Thank you for joining <3 </h1>"
-          });
-        })
-        .catch(err => {
-          console.log(err);
-        });
+
+  // check validation
+  const errors = validationResult(req);
+  // validate errors checked via express-validator and sent  as part of request in /routes/auth.js
+  if (!errors.isEmpty()) {
+    console.log("SIGNUP ERRORS", errors.array());
+    return res.status(422).render("auth/signup", {
+      path: "/signup",
+      pageTitle: "Signup",
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+        confirmPassword: req.body.confirmPassword
+      },
+      validationErrors: errors.array()
+    });
+  }
+  // PASSWORD ENCRYPTION
+  // remember to encyprt ie.hash passwords so that they are not exposed to employees or third parties
+  // second argument = how many rounds of hashing is used, currently used value 12
+  // passwords cannot be decrypted
+  bcrypt
+    .hash(password, 12)
+    .then(hashedPassword => {
+      console.log("PASSWORD HASHED", hashedPassword);
+      const user = new User({
+        email: email,
+        password: hashedPassword,
+        cart: { items: [] }
+      });
+      console.log("NEW USER", user);
+      return user.save();
+    })
+    .then(result => {
+      // it is recommended too execute redirect before as email is asynchronus and cna be blocking all future actions
+      res.redirect("/login");
+      sendWelcomeEmail(email);
     })
     .catch(err => {
       console.log(err);
