@@ -31,7 +31,7 @@
         <a
           class="<%= path === '/admin/products' ? 'active' : '' %>"
           href="/admin/products"
-          >My Products
+          >Admin Products
         </a>
       </li>
       <% } %>
@@ -52,7 +52,6 @@
       <li class="main-header__item">
         <form action="/logout" method="post">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <span><%= email %></span>
           <button type="submit">Logout</button>
         </form>
       </li>
@@ -91,11 +90,10 @@
       <a
         class="<%= path === '/admin/products' ? 'active' : '' %>"
         href="/admin/products"
-        >My Products
+        >Admin Products
       </a>
     </li>
     <% } %> <% if (!isAuthenticated) { %>
-
     <li class="mobile-nav__item">
       <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
         >Login</a
@@ -110,7 +108,7 @@
     <li class="mobile-nav__item">
       <form action="/logout" method="post">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-        <button type="submit">Logout <span><%= email %></span></button>
+        <button type="submit">Logout</button>
       </form>
     </li>
     <% } %>

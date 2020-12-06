@@ -1,4 +1,6 @@
 // mongoose version of NoSQL admin controller
+const mongoose = require("mongoose");
+const fileHelper = require("../util/file");
 const { validationResult } = require("express-validator/check");
 const Product = require("../models/product");
 
@@ -15,13 +17,32 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file; //req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const errors = validationResult(req);
 
+  console.log("IMAGE", image);
+  // Image validation
+  if (!image) {
+    return res.status(422).render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      editing: false,
+      hasError: true,
+      product: {
+        title: title,
+        price: price,
+        description: description
+      },
+      errorMessage: "Attached file is not an image.",
+      validationErrors: []
+    });
+  }
+
+  // Input error validation
+  const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log(errors.array());
+    console.log("ADD PRODUCT ERRORS", errors.array());
     return res.status(422).render("admin/edit-product", {
       pageTitle: "Add Product",
       path: "/admin/edit-product",
@@ -29,7 +50,6 @@ exports.postAddProduct = (req, res, next) => {
       hasError: true,
       product: {
         title: title,
-        imageUrl: imageUrl,
         price: price,
         description: description
       },
@@ -38,7 +58,9 @@ exports.postAddProduct = (req, res, next) => {
     });
   }
 
+  // save new product to database
   // mongoose requires object
+  const imageUrl = image.path;
   const product = new Product({
     title,
     price,
@@ -47,6 +69,8 @@ exports.postAddProduct = (req, res, next) => {
     // mongoose will on default pick the _id if you pass mongoose object
     userId: req.user
   });
+
+  console.log("ADDING PRODUCT", product);
 
   // save() from mongoose
   product
@@ -80,7 +104,7 @@ exports.postAddProduct = (req, res, next) => {
     });
 };
 
-exports.getEditProduct = (req, res, next) => {
+exports.getEditProduct = async (req, res, next) => {
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect("/");
@@ -88,34 +112,32 @@ exports.getEditProduct = (req, res, next) => {
   const prodId = req.params.productId;
   console.log("EDITING", prodId);
   // findById() from mongoose
-  Product.findById(prodId)
-    .then(product => {
-      console.log("editing product...", product);
-      if (!product) {
-        return res.redirect("/");
-      }
-      res.render("admin/edit-product", {
-        pageTitle: "Edit Product",
-        path: "/admin/edit-product",
-        editing: editMode,
-        product: product,
-        hasError: false,
-        errorMessage: null,
-        validationErrors: []
-      });
-    })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+  try {
+    const product = await Product.findById(prodId);
+    if (!product) {
+      return res.redirect("/");
+    }
+    res.render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "/admin/edit-product",
+      editing: editMode,
+      product: product,
+      hasError: false,
+      errorMessage: null,
+      validationErrors: []
     });
+  } catch (err) {
+    const error = new Error(err);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 };
 
 exports.postEditProduct = async (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
-  const updatedImageUrl = req.body.imageUrl;
+  const image = req.file;
   const updatedDesc = req.body.description;
 
   const errors = validationResult(req);
@@ -128,7 +150,6 @@ exports.postEditProduct = async (req, res, next) => {
       hasError: true,
       product: {
         title: updatedTitle,
-        imageUrl: updatedImageUrl,
         price: updatedPrice,
         description: updatedDesc,
         _id: prodId
@@ -140,7 +161,6 @@ exports.postEditProduct = async (req, res, next) => {
 
   try {
     const product = await Product.findById(prodId);
-
     // avoid malicious activities
     if (product.userId.toString() !== req.user._id.toString()) {
       console.log(
@@ -152,9 +172,12 @@ exports.postEditProduct = async (req, res, next) => {
     product.title = updatedTitle;
     product.price = updatedPrice;
     product.description = updatedDesc;
-    product.imageUrl = updatedImageUrl;
+    if (image) {
+      fileHelper.deleteFile(product.imageUrl);
+      product.imageUrl = image.path;
+    }
 
-    const result = await product.save();
+    await product.save();
     console.log("UPDATED PRODUCT!");
     res.redirect("/admin/products");
   } catch (err) {
@@ -191,6 +214,11 @@ exports.postDeleteProduct = async (req, res, next) => {
   // Product.findByIdAndRemove(prodId)
 
   try {
+    const product = await Product.findById(prodId);
+    if (!product) {
+      return next(new Error("Product not found."));
+    }
+    fileHelper.deleteFile(product.imageUrl);
     await Product.deleteOne({ _id: prodId, userId: req.user._id });
     console.log("DESTROYED PRODUCT");
     res.redirect("/admin/products");

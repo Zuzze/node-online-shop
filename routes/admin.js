@@ -15,7 +15,6 @@ router.get("/add-product", isAuth, adminController.getAddProduct);
 router.get("/products", isAuth, adminController.getProducts);
 
 // /admin/add-product => POST
-// server side validation for add prodduct form
 router.post(
   "/add-product",
   [
@@ -23,7 +22,6 @@ router.post(
       .isString()
       .isLength({ min: 3 })
       .trim(),
-    body("imageUrl").isURL(),
     body("price").isFloat(),
     body("description")
       .isLength({ min: 5, max: 400 })
@@ -33,20 +31,17 @@ router.post(
   adminController.postAddProduct
 );
 
-// /admin/edit-product/<id> => GET
 router.get("/edit-product/:productId", isAuth, adminController.getEditProduct);
 
-// middleware to validate product edit
 router.post(
   "/edit-product",
   [
-    body("title", "Title invalid")
+    body("title")
       .isString()
       .isLength({ min: 3 })
       .trim(),
-    body("imageUrl", "Image URL is invalid").isURL(),
-    body("price", "Price is invalid").isFloat(),
-    body("description", "Description must be between 5-400")
+    body("price").isFloat(),
+    body("description")
       .isLength({ min: 5, max: 400 })
       .trim()
   ],
@@ -54,7 +49,6 @@ router.post(
   adminController.postEditProduct
 );
 
-// /admin/delete-product => POST
 router.post("/delete-product", isAuth, adminController.postDeleteProduct);
 
 module.exports = router;
