@@ -207,7 +207,29 @@ exports.getProducts = (req, res, next) => {
     });
 };
 
-exports.postDeleteProduct = async (req, res, next) => {
+// this comes from DELETE request, and these kind of request cannot have body
+// get id from dynamic route /product/:productId
+// this approach does not render new page, instead the delete script in public/js/admin updates the view
+exports.deleteProduct = (req, res, next) => {
+  const prodId = req.params.productId;
+  Product.findById(prodId)
+    .then(product => {
+      if (!product) {
+        return next(new Error("Product not found."));
+      }
+      fileHelper.deleteFile(product.imageUrl);
+      return Product.deleteOne({ _id: prodId, userId: req.user._id });
+    })
+    .then(() => {
+      console.log("DESTROYED PRODUCT");
+      res.status(200).json({ message: "Success!" });
+    })
+    .catch(err => {
+      res.status(500).json({ message: "Deleting product failed." });
+    });
+};
+
+/*exports.postDeleteProduct = async (req, res, next) => {
   console.log("Post delete", req.body);
   const prodId = req.body.productId;
   // mongoose findByIdAndRemove
@@ -227,4 +249,4 @@ exports.postDeleteProduct = async (req, res, next) => {
     error.httpStatusCode = 500;
     return next(error);
   }
-};
+};*/
