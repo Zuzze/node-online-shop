@@ -99,8 +99,10 @@ app.get("/500", errorController.get500);
 app.use(errorController.get404);
 
 // --- CENTRAL ERROR HANDLING MIDDLEWARE ---
-// error handling middleware from express takes 4 arguments and is triggered on next(error)
+// error handling middleware from express takes 4 arguments
+// it is triggered on next(error) inside async requests
 app.use((error, req, res, next) => {
+  console.log(err);
   // res.status(error.httpStatusCode).render(...);
   // res.redirect('/500');
   res.status(500).render("500", {
