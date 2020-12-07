@@ -4,7 +4,6 @@ const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
 const errorController = require("./controllers/error");
-const fileHelper = require("./util/file");
 const User = require("./models/user");
 const flash = require("connect-flash");
 const multer = require("multer");
@@ -80,6 +79,7 @@ app.use(
 );
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 // this will add connect.sid cookie by express-session that stays alive between requests
 // but not between different users until browser is closed
 app.use(
@@ -98,11 +98,15 @@ app.use(flash());
 // Access local variables on each view that is rendered
 // CSRF token will change on each render
 app.use((req, res, next) => {
+  console.log(req.session.user);
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.csrfToken = req.csrfToken();
-  /*res.locals.email = req.session.isLoggedIn
+  res.locals.isAdmin =
+    req.session.isLoggedIn && req.session.user.isAdmin ? true : false;
+  res.locals.email = req.session.isLoggedIn
     ? req.session.user.email.toString()
-    : "";*/
+    : "";
+  console.log("GLOBAL VAR:", res.locals);
   next();
 });
 

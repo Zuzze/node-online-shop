@@ -135,6 +135,7 @@ exports.postOrder = async (req, res, next) => {
         email: req.user.email,
         userId: req.user
       },
+      timestamp: Date.now(),
       products: products
     });
     await order.save();

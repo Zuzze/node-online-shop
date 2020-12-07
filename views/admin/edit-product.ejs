@@ -30,11 +30,12 @@
                     value="<% if (editing || hasError) { %><%= product.imageUrl %><% } %>">
             </div> -->
             <div class="form-control">
-                <label for="image">Image</label>
+                <label for="image" class="file-upload">
                 <input 
                     type="file" 
                     name="image" 
                     id="image" >
+                    Image</label>
             </div>
             <div class="form-control">
                 <label for="price">Price</label>

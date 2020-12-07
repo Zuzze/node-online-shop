@@ -9,27 +9,34 @@
                 <ul class="cart__item-list">
                     <% products.forEach(p => { %>
                         <li class="cart__item">
-                            <h1><%= p.productId.title %></h1>
-                            <h2>Quantity: <%= p.quantity %></h2>
+                        
+                                <img src="<%=p.productId.imageUrl%>" width="100"/>
+                                <h1><a href="/products/<%=p.productId._id%>"><%= p.productId.title %></a></h1>
+                                <h2>$<%= p.productId.price.toFixed(2) %></h2>
+                            <span>
+                            
+                            <p>Quantity: <%= p.quantity %></p>
                             <form action="/cart-delete-item" method="POST">
                                 <input type="hidden" value="<%= p.productId._id %>" name="productId">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                 <button class="btn danger" type="submit">Delete</button>
                             </form>
+                        </span>
                         </li>
                     <% }) %>
                 </ul>
-                <hr>
+            
                 <div class="centered">
                     <!--<form action="/create-order" method="POST">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button type="submit" class="btn">Order Now!</button>
                     </form>-->
-                    <a class="btn" href="/checkout">Order Now!</a>
+                    <br/>
+                    <a class="btn" href="/checkout">Order Now</a>
                 </div>
                 
             <% } else { %>
-                <h1>No Products in Cart!</h1>
+                <h1 class="empty-text">No Products in Cart</h1>
             <% } %>
         </main>
         <%- include('../includes/end.ejs') %>
