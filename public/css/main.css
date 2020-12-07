@@ -12,7 +12,7 @@ body {
   background-image: url("../assets/foam.svg");
   background-size: cover;
   background-position-x: -100%;
-  height: 120vh;
+  height: 100vh;
   overflow: "hidden";
 }
 
@@ -86,7 +86,7 @@ a:hover {
 }
 
 .hero-image {
-  margin-top: -25em;
+  margin-top: -20em;
   text-align: right;
 }
 
@@ -191,23 +191,20 @@ a:hover {
 }
 
 #side-menu-toggle {
-  border: 1px solid white;
+  border: 1px solid black;
   font: inherit;
-  padding: 0.5rem;
+  padding: 0 10px;
+  margin: 10px;
   display: block;
   background: transparent;
-  color: white;
+  color: black;
+  border-radius: 3em;
+
   cursor: pointer;
 }
 
 #side-menu-toggle:focus {
   outline: none;
-}
-
-#side-menu-toggle:active,
-#side-menu-toggle:hover {
-  color: #ffeb3b;
-  border-color: #ffeb3b;
 }
 
 .backdrop {
@@ -331,9 +328,31 @@ a:hover {
   color: white;
 }
 
+@media (max-width: 767.98px) {
+  body {
+    background-position-x: -40%;
+  }
+  .hero-image {
+    margin-top: 0em;
+    margin-right: -3em;
+    overflow: hidden;
+  }
+  .hero-image img {
+    width: 120vw;
+  }
+  .hero-text {
+    font-size: 20vw;
+    margin-left: 5vw;
+  }
+}
+
 @media (min-width: 768px) {
   .main-header__nav {
     display: flex;
+  }
+
+  .mobile {
+    display: none;
   }
 
   #side-menu-toggle {
