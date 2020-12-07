@@ -344,6 +344,11 @@ a:hover {
     font-size: 20vw;
     margin-left: 5vw;
   }
+  .mobile-left {
+    display: flex;
+    justify-content: space-between;
+    width: 100vw;
+  }
 }
 
 @media (min-width: 768px) {

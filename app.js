@@ -98,7 +98,6 @@ app.use(flash());
 // Access local variables on each view that is rendered
 // CSRF token will change on each render
 app.use((req, res, next) => {
-  console.log(req.session.user);
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.csrfToken = req.csrfToken();
   res.locals.isAdmin =
@@ -106,7 +105,7 @@ app.use((req, res, next) => {
   res.locals.email = req.session.isLoggedIn
     ? req.session.user.email.toString()
     : "";
-  console.log("GLOBAL VAR:", res.locals);
+  // console.log("GLOBAL VAR:", res.locals);
   next();
 });
 
@@ -140,7 +139,7 @@ app.use(errorController.get404);
 // it is triggered on next(error) inside async requests
 app.use((error, req, res, next) => {
   console.error("Error catched by global middleware:");
-  console.log(req.session);
+  // console.log(req.session);
   console.log(error);
   // res.status(error.httpStatusCode).render(...);
   // res.redirect('/500');
