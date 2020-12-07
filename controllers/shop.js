@@ -135,8 +135,8 @@ exports.postOrder = async (req, res, next) => {
         email: req.user.email,
         userId: req.user
       },
-      timestamp: Date.now(),
-      products: products
+      products: products,
+      timestamp: Date.now()
     });
     await order.save();
     await req.user.clearCart();
@@ -307,7 +307,8 @@ exports.getCheckoutSuccess = (req, res, next) => {
           email: req.user.email,
           userId: req.user
         },
-        products: products
+        products: products,
+        timestamp: Date.now()
       });
       return order.save();
     })

@@ -14,6 +14,11 @@
   background-color: rgba(255, 255, 255, 0.6);
 }
 
+.product-item img {
+  height: auto;
+  margin: 5px;
+}
+
 .product__title {
   font-size: 1.2rem;
   text-align: center;

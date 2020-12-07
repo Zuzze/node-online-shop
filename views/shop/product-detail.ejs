@@ -4,13 +4,22 @@
     <body>
         <%- include('../includes/navigation.ejs') %>
         <main class="centered">
-            <h1><%= product.title %></h1>
-           
-            <div>
-                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
+            <div class="back-arrow">
+                <a href="/products">
+                    <img alt="back" src="../assets/back-icon.svg" height="15"/> Back to products
+                </a>
             </div>
-            <h2><%= product.price %></h2>
-            <p><%= product.description %></p>
+            <br/>
+            <div style="text-align: left; margin-left: 5vw;">
+                <h1 style="font-size: 5em; margin-bottom: 10px"><%= product.title %></h1>
+                <p style="font-size: 1.2em;"><%= product.description %></p>
+            </div>
+            <div>
+                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>" style="width: 70vw; padding: 1em; margin-top: 2em;">
+            </div>
+            <div  style="display:inline-flex">
+            <span style="font-size: 2em; font-weight: bold; margin-bottom: -1em; padding-right: 1em">$ <%= product.price.toFixed(2) %></span>
             <%- include('../includes/add-to-cart.ejs') %>
+        </div>
         </main>
         <%- include('../includes/end.ejs') %>

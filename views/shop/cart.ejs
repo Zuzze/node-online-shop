@@ -4,8 +4,15 @@
 
     <body>
         <%- include('../includes/navigation.ejs') %>
-        <main>
+        <main> 
+            <div class="centered">
+                <br/>     <br/>
+                <img alt="cart" src="../assets/cart-icon.svg" height="40"/>
+                <h1>Your cart</h1>
+         
+            </div> 
             <% if (products.length > 0) { %>
+           
                 <ul class="cart__item-list">
                     <% products.forEach(p => { %>
                         <li class="cart__item">

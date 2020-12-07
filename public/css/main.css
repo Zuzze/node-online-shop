@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700");
+@import url("https://fonts.googleapis.com/css?family=Bebas+Neue:400,700");
 
 * {
   box-sizing: border-box;
@@ -10,9 +11,14 @@ body {
   font-family: "Montserrat", sans-serif;
   background-image: url("../assets/foam.svg");
   background-size: cover;
-  background-position-x: -130%;
+  background-position-x: -100%;
   height: 120vh;
   overflow: "hidden";
+}
+
+h1 {
+  /*font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 0.2em;*/
 }
 
 main {
@@ -43,13 +49,19 @@ a {
   padding: 5px;
 }
 
+a.logo:hover {
+  text-decoration: none;
+  padding: 5px;
+}
+
 a:hover {
   border-bottom: 1px solid #2c5a59;
 }
 
 .empty-text {
   text-align: center;
-  margin-top: 25%;
+  margin-top: 20%;
+  font-size: 1.5em;
 }
 
 .main-header {
@@ -93,9 +105,17 @@ a:hover {
   display: flex;
 }
 
+.main-header__item-list.left-nav {
+  text-align: left;
+}
+
 .main-header__item {
   margin: 0 1rem;
   padding: 0;
+}
+
+.main-header__item.left {
+  margin-top: 20px;
 }
 
 .main-header__item a,
@@ -114,7 +134,7 @@ a:hover {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: #00695c;
+  color: #55afa1;
 }
 
 .mobile-nav {
@@ -323,4 +343,19 @@ a:hover {
   .user-message {
     width: 30rem;
   }
+}
+
+.back-arrow {
+  position: absolute;
+  left: 1vw;
+  top: 10vh;
+}
+
+.back-arrow a {
+  color: black;
+  padding-left: 1em;
+}
+
+.back-arrow img {
+  padding-right: 1em;
 }

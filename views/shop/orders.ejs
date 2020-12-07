@@ -12,11 +12,16 @@
                     <% orders.forEach(order => { %>
                      
                         <li class="orders__item">
-                            <h1>Order - # <%= order._id %> - <a href="/orders/<%= order._id %>">Invoice</a></h1>
+                            <h1>Order - <%=order.timestamp ? new Date(+order.timestamp).toString().slice(4, 21) : ""%></h1>
+                            <a href="/orders/<%= order._id %>" style="color: black;"><img alt="invoice" src="../assets/receipt-icon.svg" height="20"/>
+                                <span style="padding-left: 10px;">Show receipt</span>
+                            </a>
                             <div class="orders__products">
                                 <% order.products.forEach(p => { %>
-                                    <div class="orders__products-item"><%= p.quantity %> x <%= p.product.title %> </div>
-                                    <div>$ <%= p.product.price.toFixed(2) %></div>
+                                    <div class="orders__products-item">
+                                        <span><%= p.quantity %> x <%= p.product.title %></span>
+                                        <span>$ <%= p.product.price.toFixed(2) %></span>
+                                    </div>
                                 <% }); %>
                             </div>
                         </li>
